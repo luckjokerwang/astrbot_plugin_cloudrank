@@ -1,149 +1,183 @@
 {
-    "auto_generate_enabled": {
-        "type": "bool",
-        "description": "是否启用自动生成词云",
-        "hint": "定时执行，根据cron表达式配置的时间生成词云",
-        "default": true
-    },
-    "auto_generate_cron": {
-        "type": "string",
-        "description": "自动生成词云的cron表达式",
-        "hint": "使用标准cron格式（分 时 日 月 周），默认每天晚上8点执行",
-        "default": "0 20 * * *"
-    },
-    "timezone": {
-        "type": "string",
-        "description": "自定义插件使用的时区 (IANA时区名称)",
-        "hint": "请输入有效的IANA时区名称，例如：Asia/Shanghai, Europe/London, America/New_York, UTC，您可以参考维基百科的列表 (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) 或通过 Python 的 pytz.all_timezones 获取，这将用于确定每日生成词云和cron表达式的本地时间，",
-        "default": "Asia/Shanghai"
-    },
-    "daily_generate_enabled": {
-        "type": "bool",
-        "description": "是否启用每日词云生成",
-        "hint": "每天固定时间生成当天的聊天词云",
-        "default": true
-    },
-    "daily_generate_time": {
-        "type": "string",
-        "description": "每日词云生成时间",
-        "hint": "格式为 HH:MM，如：23:30 表示每天晚上11点30分",
-        "default": "23:30"
-    },
-    "daily_summary_title": {
-        "type": "string",
-        "description": "每日词云标题模板",
-        "hint": "支持变量：{date}=日期，{group_name}=群名称",
-        "default": "{date} {group_name} 今日词云"
-    },
-    "enabled_group_list": {
-        "type": "string",
-        "description": "启用今日词云功能的群聊列表",
-        "hint": "以逗号分隔的群号列表，如：123456789,987654321，仅在此处填写的群号才会启用词云功能，留空则默认所有群都不启用，",
-        "default": ""
-    },
-    "history_days": {
-        "type": "int",
-        "description": "统计历史消息的天数",
-        "hint": "手动生成词云时默认统计的天数",
-        "default": 7
-    },
-    "max_word_count": {
-        "type": "int",
-        "description": "词云中最大显示词数",
-        "hint": "建议在50-200之间",
-        "default": 100
-    },
-    "min_word_length": {
-        "type": "int",
-        "description": "最小词长度",
-        "hint": "小于此长度的词会被忽略，建议为2",
-        "default": 2
-    },
-    "min_word_frequency": {
-        "type": "int",
-        "description": "最小词频",
-        "hint": "出现次数低于此值的词将被过滤，以优化词云视觉效果，设为1则不过滤",
-        "default": 1
-    },
-    "background_color": {
-        "type": "string",
-        "description": "词云背景颜色",
-        "hint": "可使用颜色名称或十六进制值，如：white、black、#FFFFFF、#000000",
-        "default": "white"
-    },
-    "colormap": {
-        "type": "string",
-        "description": "词云配色方案",
-        "hint": "影响词云中词语的颜色",
-        "default": "viridis",
-        "options": ["viridis", "plasma", "inferno", "magma", "cividis", "rainbow", "jet", "turbo", "cool", "hot"]
-    },
-    "font_path": {
-        "type": "string",
-        "description": "字体路径",
-        "hint": "可使用相对路径或绝对路径，留空使用默认字体，",
-        "default": ""
-    },
-    "stop_words_file": {
-        "type": "string",
-        "description": "停用词文件路径",
-        "hint": "可使用相对路径或绝对路径，留空使用默认停用词，",
-        "default": "stop_words.txt"
-    },
-    "include_bot_messages": {
-        "type": "bool",
-        "description": "是否将机器人自身的消息计入词云统计",
-        "hint": "开启后，机器人自己发送的消息也会被用于生成词云，默认为关闭，",
-        "default": false
-    },
-    "shape": {
-        "type": "string",
-        "description": "词云形状",
-        "hint": "决定词云的整体形状，如果设置了自定义蒙版路径，则此选项无效，",
-        "default": "rectangle",
-        "options": ["rectangle", "circle", "diamond", "triangle_up"]
-    },
-    "custom_mask_path": {
-        "type": "string",
-        "description": "自定义蒙版图片路径",
-        "hint": "提供一个图片文件的路径作为词云的形状蒙版，图片中白色区域将被忽略，非白色区域将用于绘制词语，如果设置了此路径，则预设的'形状'选项将无效，支持相对路径（相对于插件数据目录下的resources/images/子目录）或绝对路径，",
-        "default": ""
-    },
-    "min_font_size": {
-        "type": "int",
-        "description": "词云最小字体大小",
-        "hint": "低频词语的最小字体大小，建议设置为8-15之间",
-        "default": 8
-    },
-    "max_font_size": {
-        "type": "int",
-        "description": "词云最大字体大小",
-        "hint": "高频词语的最大字体大小，建议设置为150-300之间",
-        "default": 170
-    },
-    "show_user_ranking": {
-        "type": "bool",
-        "description": "是否在每日词云中显示用户活跃度排行",
-        "hint": "开启后，每日词云生成时会同时显示当天发言最活跃的用户排行榜",
-        "default": true
-    },
-    "ranking_user_count": {
-        "type": "int",
-        "description": "用户排行榜显示的人数",
-        "hint": "设置排行榜显示的用户数量，建议5-10之间",
-        "default": 5
-    },
-    "ranking_medals": {
-        "type": "string",
-        "description": "排行榜奖牌表情",
-        "hint": "用逗号分隔的表情符号，例如：🥇,🥈,🥉,🏅,🏅 前三名会使用前三个表情",
-        "default": "🥇,🥈,🥉,🏅,🏅"
-    },
-    "debug_mode": {
-        "type": "bool",
-        "description": "启用详细调试日志",
-        "hint": "开启后会在控制台输出非常详细的调度器和任务执行日志，用于问题排查，请仅在需要时开启，",
-        "default": false,
-        "obvious_hint": false
-    }
+  "auto_generate_enabled": {
+    "type": "bool",
+    "description": "是否启用自动生成词云",
+    "hint": "定时执行，根据cron表达式配置的时间生成词云",
+    "default": true
+  },
+  "auto_generate_cron": {
+    "type": "string",
+    "description": "自动生成词云的cron表达式",
+    "hint": "使用标准cron格式（分 时 日 月 周），默认每天晚上8点执行",
+    "default": "0 20 * * *"
+  },
+  "timezone": {
+    "type": "string",
+    "description": "自定义插件使用的时区 (IANA时区名称)",
+    "hint": "请输入有效的IANA时区名称，例如：Asia/Shanghai, Europe/London, America/New_York, UTC，您可以参考维基百科的列表 (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) 或通过 Python 的 pytz.all_timezones 获取，这将用于确定每日生成词云和cron表达式的本地时间，",
+    "default": "Asia/Shanghai"
+  },
+  "daily_generate_enabled": {
+    "type": "bool",
+    "description": "是否启用每日词云生成",
+    "hint": "每天固定时间生成当天的聊天词云",
+    "default": true
+  },
+  "daily_generate_time": {
+    "type": "string",
+    "description": "每日词云生成时间",
+    "hint": "格式为 HH:MM，如：23:30 表示每天晚上11点30分",
+    "default": "23:30"
+  },
+  "daily_summary_title": {
+    "type": "string",
+    "description": "每日词云标题模板",
+    "hint": "支持变量：{date}=日期，{group_name}=群名称",
+    "default": "{date} {group_name} 今日词云"
+  },
+  "enabled_group_list": {
+    "type": "string",
+    "description": "启用今日词云功能的群聊列表",
+    "hint": "以逗号分隔的群号列表，如：123456789,987654321，仅在此处填写的群号才会启用词云功能，留空则默认所有群都不启用，",
+    "default": ""
+  },
+  "history_days": {
+    "type": "int",
+    "description": "统计历史消息的天数",
+    "hint": "手动生成词云时默认统计的天数",
+    "default": 7
+  },
+  "max_word_count": {
+    "type": "int",
+    "description": "词云中最大显示词数",
+    "hint": "建议在50-200之间",
+    "default": 100
+  },
+  "min_word_length": {
+    "type": "int",
+    "description": "最小词长度",
+    "hint": "小于此长度的词会被忽略，建议为2",
+    "default": 2
+  },
+  "min_word_frequency": {
+    "type": "int",
+    "description": "最小词频",
+    "hint": "出现次数低于此值的词将被过滤，以优化词云视觉效果，设为1则不过滤",
+    "default": 1
+  },
+  "background_color": {
+    "type": "string",
+    "description": "词云背景颜色",
+    "hint": "可使用颜色名称或十六进制值，如：white、black、#FFFFFF、#000000",
+    "default": "white"
+  },
+  "colormap": {
+    "type": "string",
+    "description": "词云配色方案",
+    "hint": "影响词云中词语的颜色",
+    "default": "viridis",
+    "options": [
+      "viridis",
+      "plasma",
+      "inferno",
+      "magma",
+      "cividis",
+      "rainbow",
+      "jet",
+      "turbo",
+      "cool",
+      "hot"
+    ]
+  },
+  "font_path": {
+    "type": "string",
+    "description": "字体路径",
+    "hint": "可使用相对路径或绝对路径，留空使用默认字体，",
+    "default": ""
+  },
+  "stop_words_file": {
+    "type": "string",
+    "description": "停用词文件路径",
+    "hint": "可使用相对路径或绝对路径，留空使用默认停用词，",
+    "default": "stop_words.txt"
+  },
+  "include_bot_messages": {
+    "type": "bool",
+    "description": "是否将机器人自身的消息计入词云统计",
+    "hint": "开启后，机器人自己发送的消息也会被用于生成词云，默认为关闭，",
+    "default": false
+  },
+  "filter_command_prefixes": {
+    "type": "string",
+    "description": "过滤消息的命令前缀",
+    "hint": "以逗号分隔的前缀列表，以这些前缀开头的消息将不会被统计到词云中，例如：/,!,#",
+    "default": "/,!"
+  },
+  "shape": {
+    "type": "string",
+    "description": "词云形状",
+    "hint": "决定词云的整体形状，如果设置了自定义蒙版路径，则此选项无效，",
+    "default": "rectangle",
+    "options": [
+      "rectangle",
+      "circle",
+      "diamond",
+      "triangle_up"
+    ]
+  },
+  "custom_mask_path": {
+    "type": "string",
+    "description": "自定义蒙版图片路径",
+    "hint": "提供一个图片文件的路径作为词云的形状蒙版，图片中白色区域将被忽略，非白色区域将用于绘制词语，如果设置了此路径，则预设的'形状'选项将无效，支持相对路径（相对于插件数据目录下的resources/images/子目录）或绝对路径，",
+    "default": ""
+  },
+  "min_font_size": {
+    "type": "int",
+    "description": "词云最小字体大小",
+    "hint": "低频词语的最小字体大小，建议设置为8-15之间",
+    "default": 8
+  },
+  "max_font_size": {
+    "type": "int",
+    "description": "词云最大字体大小",
+    "hint": "高频词语的最大字体大小，建议设置为150-300之间",
+    "default": 170
+  },
+  "show_user_ranking": {
+    "type": "bool",
+    "description": "是否在每日词云中显示用户活跃度排行",
+    "hint": "开启后，每日词云生成时会同时显示当天发言最活跃的用户排行榜",
+    "default": true
+  },
+  "ranking_user_count": {
+    "type": "int",
+    "description": "用户排行榜显示的人数",
+    "hint": "设置排行榜显示的用户数量，建议5-10之间",
+    "default": 5
+  },
+  "ranking_medals": {
+    "type": "string",
+    "description": "排行榜奖牌表情",
+    "hint": "用逗号分隔的表情符号，例如：🥇,🥈,🥉,🏅,🏅 前三名会使用前三个表情",
+    "default": "🥇,🥈,🥉,🏅,🏅"
+  },
+  "auto_cleanup_enabled": {
+    "type": "bool",
+    "description": "是否启用自动清理词云缓存图片",
+    "hint": "启用后会自动删除超过指定天数的词云图片，释放磁盘空间",
+    "default": true
+  },
+  "cleanup_days": {
+    "type": "int",
+    "description": "词云图片保留天数",
+    "hint": "超过此天数的词云图片将被自动删除，建议设置为7-30天",
+    "default": 7
+  },
+  "debug_mode": {
+    "type": "bool",
+    "description": "启用详细调试日志",
+    "hint": "开启后会在控制台输出非常详细的调度器和任务执行日志，用于问题排查，请仅在需要时开启，",
+    "default": false,
+    "obvious_hint": false
+  }
 }

@@ -488,19 +488,37 @@ class WordCloudGenerator:
         """
         return segment_text(text, self.min_word_length, self.stop_words)
 
-    def process_texts(self, texts: List[str]) -> Dict[str, int]:
+    def process_texts(self, texts: List[str], filter_prefixes: List[str] = None) -> Dict[str, int]:
         """
         处理多条文本，统计词频
 
         Args:
             texts: 文本列表
+            filter_prefixes: 可选的命令前缀列表，以这些前缀开头的文本将被过滤
 
         Returns:
             词频统计字典
         """
+        # 设置默认的命令前缀过滤
+        if filter_prefixes is None:
+            filter_prefixes = ["/", "!"]
+        
+        # 过滤命令消息（作为兜底，处理历史数据中可能存在的命令）
+        filtered_texts = []
+        filtered_count = 0
+        for text in texts:
+            text_stripped = text.strip()
+            if text_stripped and not any(text_stripped.startswith(prefix) for prefix in filter_prefixes):
+                filtered_texts.append(text)
+            else:
+                filtered_count += 1
+        
+        if filtered_count > 0:
+            logger.debug(f"过滤了 {filtered_count} 条命令消息")
+        
         # 合并所有文本并分词
         all_words = []
-        for text in texts:
+        for text in filtered_texts:
             words = self.process_text(text)
             all_words.extend(words)
 

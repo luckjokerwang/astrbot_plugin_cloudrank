@@ -4,7 +4,7 @@
 
 <br>
 
-<div align="center">  <a href="#更新日志"> <img src="https://img.shields.io/badge/version-v2.0.1-9644F4?style=for-the-badge" alt="Version"></a>
+<div align="center">  <a href="#更新日志"> <img src="https://img.shields.io/badge/version-v2.0.2-9644F4?style=for-the-badge" alt="Version"></a>
   <a href="https://github.com/GEMILUXVII/astrbot_plugin_cloudrank/blob/main/LICENSE"> <img src="https://img.shields.io/badge/license-AGPL--3.0-E53935?style=for-the-badge" alt="License"></a>
   <a href="https://www.python.org/downloads/"> <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python Version"></a>
   <a href="https://github.com/AstrBotDevs/AstrBot"> <img src="https://img.shields.io/badge/AstrBot-Compatible-00BFA5?style=for-the-badge&logo=robot&logoColor=white" alt="AstrBot Compatible"></a>
@@ -13,7 +13,7 @@
 <div align="center">
   <a href="https://github.com/botuniverse/onebot-11"> <img src="https://img.shields.io/badge/OneBotv11-AIOCQHTTP-FF9800?style=for-the-badge&logo=qq&logoColor=white" alt="OneBot v11 Support"></a>
   <a href="https://github.com/WeChatPadPro/WeChatPadPro"> <img src="https://img.shields.io/badge/WeChat-PadPro-07C160?style=for-the-badge&logo=wechat&logoColor=white" alt="WeChatPadPro Support"></a>
-  <a href="https://github.com/GEMILUXVII/astrbot_plugin_cloudrank/commits/main"> <img src="https://img.shields.io/badge/updated-2025--09--13-0097A7?style=for-the-badge&logo=calendar&logoColor=white" alt="Last Updated"></a>
+  <a href="https://github.com/GEMILUXVII/astrbot_plugin_cloudrank/commits/main"> <img src="https://img.shields.io/badge/updated-2025--12--30-0097A7?style=for-the-badge&logo=calendar&logoColor=white" alt="Last Updated"></a>
 </div>
 
 ## ◆ 介绍
@@ -216,6 +216,13 @@ CloudRank 插件基于 AstrBot 平台开发：
     <td> <code> true </code> 时，机器人自己发送的消息也会被用于生成词云。默认为关闭 </td>
   </tr>
   <tr>
+    <td> <code> filter_command_prefixes </code> </td>
+    <td> <code> string </code> </td>
+    <td> 过滤消息的命令前缀 </td>
+    <td> <code> /,! </code> </td>
+    <td> 以逗号分隔的前缀列表，以这些前缀开头的消息将不会被统计到词云中。例如 <code>/,!,#</code> 表示过滤以 / ! # 开头的消息 </td>
+  </tr>
+  <tr>
     <td> <code> shape </code> </td>
     <td> <code> string </code> </td>
     <td> 词云的预设形状 </td>
@@ -249,6 +256,20 @@ CloudRank 插件基于 AstrBot 平台开发：
     <td> 排行榜奖牌表情 </td>
     <td> <code> 🥇, 🥈, 🥉, 🏅, 🏅 </code> </td>
     <td> 用逗号分隔的表情符号，前三名会使用前三个表情，其余位置使用后续表情 </td>
+  </tr>
+  <tr>
+    <td> <code> auto_cleanup_enabled </code> </td>
+    <td> <code> bool </code> </td>
+    <td> 是否启用自动清理词云缓存图片 </td>
+    <td> <code> true </code> </td>
+    <td> <code> true </code> 时，插件会自动删除超过指定天数的词云图片，释放磁盘空间 </td>
+  </tr>
+  <tr>
+    <td> <code> cleanup_days </code> </td>
+    <td> <code> int </code> </td>
+    <td> 词云图片保留天数 </td>
+    <td> <code> 7 </code> </td>
+    <td> 超过此天数的词云图片将被自动删除，建议设置为 7-30 天之间的值 </td>
   </tr>
   <tr>
     <td> <code> debug_mode </code> </td>
@@ -476,6 +497,20 @@ AstrBot/data/plugin_data/cloudrank/
   - **解决**: 确保消息格式完全匹配 `constant.py` 中定义的关键词，包括空格和标点符号，确保消息不以 `/` 开头，否则会被视为命令而非普通消息
 
 ## ◆ 更新日志
+
+#### **v2.0.2** (2025-12-30)
+
+**新增功能**:
+
+- 新增命令过滤功能 ([#12](https://github.com/GEMILUXVII/astrbot_plugin_cloudrank/issues/12))
+  - 添加 `filter_command_prefixes` 配置项
+  - 支持自定义需要过滤的命令前缀（默认过滤 `/` 和 `!` 开头的消息）
+  - 防止命令消息污染词云，使词云更能反映真实聊天内容
+
+- 新增词云缓存自动清理功能 ([#13](https://github.com/GEMILUXVII/astrbot_plugin_cloudrank/issues/13))
+  - 添加 `auto_cleanup_enabled` 和 `cleanup_days` 配置项
+  - 每天凌晨 3 点自动清理过期的词云图片
+  - 可自定义保留天数，默认 7 天，释放磁盘空间
 
 #### **v2.0.1** (2025-09-13)
 

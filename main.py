@@ -280,6 +280,11 @@ class WordCloudPlugin(Star):
             # 设置为空集合，表示默认全部启用
             self.enabled_groups = set()
 
+    def _get_filter_prefixes(self) -> list:
+        """获取命令过滤前缀列表"""
+        filter_prefixes_str = self.config.get("filter_command_prefixes", "/,!")
+        return [p.strip() for p in filter_prefixes_str.split(",") if p.strip()]
+
     async def initialize(self):
         """初始化插件"""
         try:
@@ -514,6 +519,27 @@ class WordCloudPlugin(Star):
             else:
                 logger.info("每日生成词云功能已禁用")
 
+            # 检查是否启用自动清理功能
+            auto_cleanup_enabled = self.config.get("auto_cleanup_enabled", True)
+            if auto_cleanup_enabled:
+                # 每天凌晨3点执行清理
+                cleanup_cron = "0 3 * * *"
+                try:
+                    task_added = self.scheduler.add_task(
+                        cron_expression=cleanup_cron,
+                        callback=self.cleanup_old_images,
+                        task_id="cleanup_old_images",
+                    )
+                    if task_added:
+                        cleanup_days = self.config.get("cleanup_days", 7)
+                        logger.info(f"已添加图片清理定时任务，每天凌晨3点清理超过 {cleanup_days} 天的图片")
+                    else:
+                        logger.error("添加图片清理定时任务失败")
+                except Exception as cleanup_task_error:
+                    logger.error(f"添加图片清理定时任务失败: {cleanup_task_error}")
+            else:
+                logger.info("自动清理图片功能已禁用")
+
             # 启动调度器
             logger.info("准备启动定时任务调度器...")
             self.scheduler.start()
@@ -559,9 +585,14 @@ class WordCloudPlugin(Star):
             # 获取是否计入机器人消息的配置
             include_bot_msgs = self.config.get("include_bot_messages", False)
 
-            # 跳过命令消息
-            if event.message_str is not None and event.message_str.startswith("/"):
-                return
+            # 获取命令前缀配置并跳过命令消息
+            filter_prefixes = self._get_filter_prefixes()
+            
+            if event.message_str is not None:
+                for prefix in filter_prefixes:
+                    if event.message_str.startswith(prefix):
+                        logger.debug(f"跳过命令消息 (前缀: {prefix}): {event.message_str[:30]}...")
+                        return
 
             # 如果不计入机器人消息，则跳过机器人自身消息
             if not include_bot_msgs and event.get_sender_id() == event.get_self_id():
@@ -761,7 +792,7 @@ class WordCloudPlugin(Star):
                 return
 
             # 处理消息文本并生成词云
-            word_counts = self.wordcloud_generator.process_texts(texts)
+            word_counts = self.wordcloud_generator.process_texts(texts, self._get_filter_prefixes())
 
             # 设置标题
             title = f"{'群聊' if group_id_val else '私聊'}词云 - 最近{actual_days}天"
@@ -985,7 +1016,7 @@ class WordCloudPlugin(Star):
                 return
 
             # 处理消息文本并生成词云
-            word_counts = self.wordcloud_generator.process_texts(texts)
+            word_counts = self.wordcloud_generator.process_texts(texts, self._get_filter_prefixes())
 
             # 获取今天的日期
             date_str = format_date()
@@ -1221,6 +1252,62 @@ class WordCloudPlugin(Star):
             logger.error(f"清理配置失败: {e}")
             yield event.plain_result(f"清理配置失败: {str(e)}")
 
+    async def cleanup_old_images(self):
+        """清理过期的词云缓存图片"""
+        try:
+            if not self.config.get("auto_cleanup_enabled", True):
+                logger.debug("自动清理功能已禁用，跳过清理")
+                return
+            
+            cleanup_days = self.config.get("cleanup_days", 7)
+            
+            # 确保 DATA_DIR 已初始化
+            if constant_module.DATA_DIR is None:
+                logger.warning("DATA_DIR 未初始化，无法清理图片")
+                return
+            
+            images_dir = Path(constant_module.DATA_DIR) / "images"
+            
+            if not images_dir.exists():
+                logger.debug(f"图片目录不存在，跳过清理: {images_dir}")
+                return
+            
+            cutoff_time = time.time() - (cleanup_days * 24 * 60 * 60)
+            deleted_count = 0
+            deleted_dirs = 0
+            
+            logger.info(f"开始清理超过 {cleanup_days} 天的词云缓存图片...")
+            
+            for session_dir in images_dir.iterdir():
+                if session_dir.is_dir():
+                    for image_file in session_dir.glob("*.png"):
+                        try:
+                            if image_file.stat().st_mtime < cutoff_time:
+                                image_file.unlink()
+                                deleted_count += 1
+                                logger.debug(f"已删除过期图片: {image_file.name}")
+                        except Exception as e:
+                            logger.warning(f"删除过期图片失败: {image_file}, 错误: {e}")
+                    
+                    # 如果目录为空，也删除目录
+                    try:
+                        if not any(session_dir.iterdir()):
+                            session_dir.rmdir()
+                            deleted_dirs += 1
+                            logger.debug(f"已删除空目录: {session_dir.name}")
+                    except Exception:
+                        pass
+            
+            if deleted_count > 0 or deleted_dirs > 0:
+                logger.info(f"清理完成，共删除 {deleted_count} 个过期词云图片，{deleted_dirs} 个空目录")
+            else:
+                logger.debug("没有需要清理的过期图片")
+                
+        except Exception as e:
+            logger.error(f"清理过期图片失败: {e}")
+            import traceback
+            logger.error(f"清理错误详情: {traceback.format_exc()}")
+
     async def auto_generate_wordcloud(self):
         """自动生成词云的定时任务回调"""
         logger.info("开始执行自动生成词云任务")
@@ -1263,7 +1350,7 @@ class WordCloudPlugin(Star):
                         continue
 
                     # 处理消息文本并生成词云
-                    word_counts = self.wordcloud_generator.process_texts(message_texts)
+                    word_counts = self.wordcloud_generator.process_texts(message_texts, self._get_filter_prefixes())
 
                     # 生成词云图片
                     title = f"聊天词云 - 定时生成 - 最近{days}天"
@@ -1408,7 +1495,7 @@ class WordCloudPlugin(Star):
 
                         # 处理消息文本并生成词云
                         word_counts = self.wordcloud_generator.process_texts(
-                            all_messages
+                            all_messages, self._get_filter_prefixes()
                         )
 
                         # 设置标题
