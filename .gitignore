@@ -1,8 +1,2 @@
-wordcloud_core/__pycache__/__init__.cpython-310.pyc
-wordcloud_core/__pycache__/generator.cpython-310.pyc
 .github/copilot-instructions.md
-__pycache__/constant.cpython-310.pyc
-__pycache__/main.cpython-310.pyc
-__pycache__/utils.cpython-310.pyc
-wordcloud_core/__pycache__/history_manager.cpython-310.pyc
-wordcloud_core/__pycache__/scheduler.cpython-310.pyc
+__pycache__/
